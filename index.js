@@ -1,12 +1,12 @@
-
-const app = require('express')();
+const express = require('express');
+const app = express();
 let chrome = {};
 let puppeteer;
+
 if (process.env.AWS_LAMBDA_FUNCTION_VERSION) {
   chrome = require('chrome-aws-lambda');
   puppeteer = require('puppeteer-core');
-}
-else {
+} else {
   puppeteer = require('puppeteer');
 }
 
@@ -21,27 +21,38 @@ app.get("/gold-price", async (req, res) => {
       headless: true,
       ignoreHTTPSErrors: true,
     };
+  } else {
+    options = {
+      headless: true, // Ensure headless mode for local testing too
+      defaultViewport: false,
+    };
   }
 
   try {
-    const browser = await puppeteer.launch({
-      headless: false,
-      defaultViewport: false,
-    });
+    const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
-    await page.goto('https://www.google.com/search?q=gold+price');
 
-    const goldhandles = await page.$$('.vlzY6d');
-    for (const goldinfo of goldhandles) {
+    await page.goto('https://www.google.com/search?q=gold+price', {
+      waitUntil: 'domcontentloaded',
+    });
 
-      const val = await page.evaluate(el => el.querySelector(" g-card-section > div.vlzY6d > span:nth-child(1)").textContent, goldinfo);
+    const goldHandles = await page.$$('.vlzY6d'); // Keep your selector as requested
+
+    let goldValues = [];
+    for (const goldInfo of goldHandles) {
+      const val = await page.evaluate(
+        el => el.querySelector("g-card-section > div.vlzY6d > span:nth-child(1)").textContent,
+        goldInfo
+      );
       console.log(val);
-      res.send(val);
+      goldValues.push(val);
     }
-  }
-  catch(err) {
-    console.error(err);
-    return null;
+
+    await browser.close();
+    res.json({ goldPrices: goldValues });
+  } catch (err) {
+    console.error('Error fetching gold price:', err);
+    res.status(500).send('Failed to fetch gold price');
   }
 });
 
