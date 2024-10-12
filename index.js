@@ -44,7 +44,7 @@ app.get("/gold-price", async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 3000; // Use Render's dynamic port or default to 3000
+const PORT = process.env.PORT || 3000; 
 app.listen(PORT, () => {
   console.log(`Server started on port ${PORT}`);
 });
