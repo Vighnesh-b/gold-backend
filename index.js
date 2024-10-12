@@ -4,43 +4,47 @@ const app = express();
 require("dotenv").config();
 
 app.get("/gold-price", async (req, res) => {
+    // Set the executable path based on the environment
     const executablePath = process.env.NODE_ENV === 'production'
-        ? '/usr/bin/google-chrome-stable'
+        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
         : puppeteer.executablePath();
 
+    // Log the executable path for debugging
     console.log('Using executable path:', executablePath);
 
-    const options = {
+    let options = {
         headless: true,
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
             '--disable-dev-shm-usage',
-            '--disable-extensions',
-            '--disable-background-networking',
-            '--disable-renderer-backgrounding',
-            '--disable-software-rasterizer',
-            '--mute-audio',
-            '--headless=new',
         ],
-        executablePath,
+        executablePath: executablePath,
     };
 
     try {
+        console.log('Launching Puppeteer with options:', options);
         const browser = await puppeteer.launch(options);
         const page = await browser.newPage();
 
         await page.goto('https://www.google.com/search?q=gold+price', {
             waitUntil: 'domcontentloaded',
-            timeout: 60000,
         });
 
-        const goldValues = await page.$$eval('.vlzY6d span:nth-child(1)', spans =>
-            spans.map(span => span.textContent.trim())
-        );
+        const goldHandles = await page.$$('.vlzY6d');
+
+        let goldValues = [];
+
+        for (const goldInfo of goldHandles) {
+            const val = await page.evaluate(
+                el => el.querySelector("g-card-section > div.vlzY6d > span:nth-child(1)").textContent,
+                goldInfo
+            );
+            console.log(val);
+            goldValues.push(val);
+        }
 
         await browser.close();
-        console.log('Gold Prices:', goldValues);
         res.json({ goldPrices: goldValues });
     } catch (err) {
         console.error('Error fetching gold price:', err);
@@ -54,4 +58,3 @@ app.listen(PORT, () => {
 });
 
 module.exports = app;
-
