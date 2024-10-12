@@ -4,52 +4,49 @@ const app = express();
 require("dotenv").config();
 
 app.get("/gold-price", async (req, res) => {
-    // Set the executable path based on the environment
-    const executablePath = process.env.NODE_ENV === 'production'
-        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
-        : puppeteer.executablePath();
+  const executablePath = process.env.NODE_ENV === 'production'
+      ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/google-chrome-stable'
+      : puppeteer.executablePath();
 
-    // Log the executable path for debugging
-    console.log('Using executable path:', executablePath);
+  let options = {
+      headless: 'new',
+      args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--window-size=1280,800',
+      ],
+      executablePath: executablePath,
+  };
 
-    let options = {
-        headless: true,
-        args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-        ],
-        executablePath: executablePath,
-    };
+  try {
+      const browser = await puppeteer.launch(options);
+      const page = await browser.newPage();
+      await page.setUserAgent(
+          'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36'
+      );
 
-    try {
-        console.log('Launching Puppeteer with options:', options);
-        const browser = await puppeteer.launch(options);
-        const page = await browser.newPage();
+      await page.goto('https://www.google.com/search?q=gold+price', {
+          waitUntil: 'networkidle2',
+      });
 
-        await page.goto('https://www.google.com/search?q=gold+price', {
-            waitUntil: 'domcontentloaded',
-        });
+      await page.waitForSelector('.vlzY6d', { timeout: 5000 });
+      const goldHandles = await page.$$('.vlzY6d');
 
-        const goldHandles = await page.$$('.vlzY6d');
+      let goldValues = [];
+      for (const goldInfo of goldHandles) {
+          const val = await page.evaluate(el => el.innerText, goldInfo);
+          console.log(val);
+          goldValues.push(val);
+      }
 
-        let goldValues = [];
-
-        for (const goldInfo of goldHandles) {
-            const val = await page.evaluate(
-                el => el.querySelector("g-card-section > div.vlzY6d > span:nth-child(1)").textContent,
-                goldInfo
-            );
-            console.log(val);
-            goldValues.push(val);
-        }
-
-        await browser.close();
-        res.json({ goldPrices: goldValues });
-    } catch (err) {
-        console.error('Error fetching gold price:', err);
-        res.status(500).send('Failed to fetch gold price');
-    }
+      await browser.close();
+      res.json({ goldPrices: goldValues });
+  } catch (err) {
+      console.error('Error fetching gold price:', err);
+      res.status(500).send('Failed to fetch gold price');
+  }
 });
 
 const PORT = process.env.PORT || 3000;
