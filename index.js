@@ -19,17 +19,17 @@ app.get("/gold-price", async (req, res) => {
         ...chrome.args,
         '--no-sandbox',
         '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage', // Use /tmp instead of /dev/shm
+        '--disable-dev-shm-usage',
       ],
       defaultViewport: chrome.defaultViewport,
-      executablePath: await chrome.executablePath, // Ensure this is the correct path
+      executablePath: await chrome.executablePath,
       headless: true,
       ignoreHTTPSErrors: true,
     };
   } else {
     options = {
       headless: true,
-      defaultViewport: false
+      defaultViewport: false,
     };
   }
 
