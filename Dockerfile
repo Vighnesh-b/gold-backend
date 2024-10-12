@@ -1,16 +1,27 @@
+FROM node:alpine
 
-FROM ghcr.io/puppeteer/puppeteer:23.5.3
+
+RUN apk add --no-cache \
+    chromium \
+    nss \
+    freetype \
+    fontconfig \
+    ttf-freefont
+
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
-    PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable \
-    NODE_ENV=production
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+
 
 WORKDIR /usr/src/app
 
+
 COPY package*.json ./
-RUN npm ci --only=production
+RUN npm install
+
 
 COPY . .
 
 
 CMD ["node", "index.js"]
+
