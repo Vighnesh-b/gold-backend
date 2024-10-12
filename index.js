@@ -28,7 +28,7 @@ app.get("/gold-price", async (req, res) => {
     };
   } else {
     options = {
-      headless: true, // Ensure headless mode for local testing too
+      headless: true, 
       defaultViewport: false,
     };
   }
@@ -41,7 +41,7 @@ app.get("/gold-price", async (req, res) => {
       waitUntil: 'domcontentloaded',
     });
 
-    const goldHandles = await page.$$('.vlzY6d'); // Keep your selector as requested
+    const goldHandles = await page.$$('.vlzY6d'); 
 
     let goldValues = [];
 
