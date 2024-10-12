@@ -4,9 +4,13 @@ const app = express();
 require("dotenv").config();
 
 app.get("/gold-price", async (req, res) => {
-    const executablePath = process.env.NODE_ENV === 'production' 
-        ? process.env.PUPPETEER_EXECUTABLE_PATH
+    // Set the executable path based on the environment
+    const executablePath = process.env.NODE_ENV === 'production'
+        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium'
         : puppeteer.executablePath();
+
+    // Log the executable path for debugging
+    console.log('Using executable path:', executablePath);
 
     let options = {
         headless: true,
