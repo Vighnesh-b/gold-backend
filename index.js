@@ -13,6 +13,7 @@ app.get("/gold-price", async (req, res) => {
   };
 
   try {
+    console.log('Launching Puppeteer with options:', options);
     const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
 
