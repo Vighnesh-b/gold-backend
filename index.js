@@ -5,7 +5,7 @@ require("dotenv").config();
 
 app.get("/gold-price", async (req, res) => {
     const executablePath = process.env.NODE_ENV === 'production' 
-        ? process.env.PUPPETEER_EXECUTABLE_PATH || '/usr/bin/chromium-browser'
+        ? process.env.PUPPETEER_EXECUTABLE_PATH
         : puppeteer.executablePath();
 
     let options = {
