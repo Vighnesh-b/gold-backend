@@ -1,6 +1,7 @@
 const express = require('express');
 const puppeteer = require('puppeteer'); // Using puppeteer instead of puppeteer-core
 const app = express();
+require("dotenv").config();
 
 app.get("/gold-price", async (req, res) => {
   let options = {
@@ -10,6 +11,7 @@ app.get("/gold-price", async (req, res) => {
       '--disable-setuid-sandbox',
       '--disable-dev-shm-usage',
     ],
+    executablePath: process.env.NODE_ENV==='production'?process.env.PUPPETEER_EXECUTABLE_PATH:puppeteer.executablePath(),
   };
 
   try {
