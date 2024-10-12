@@ -1,37 +1,16 @@
 const express = require('express');
+const puppeteer = require('puppeteer'); // Using puppeteer instead of puppeteer-core
 const app = express();
-let chrome = {};
-let puppeteer;
-
-if (process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL) {
-  chrome = require('chrome-aws-lambda');
-  puppeteer = require('puppeteer-core');
-} else {
-  puppeteer = require('puppeteer');
-}
 
 app.get("/gold-price", async (req, res) => {
-  let options = {};
-
-  if (process.env.AWS_LAMBDA_FUNCTION_VERSION || process.env.VERCEL) {
-    options = {
-      args: [
-        ...chrome.args,
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-      ],
-      defaultViewport: chrome.defaultViewport,
-      executablePath: await chrome.executablePath,
-      headless: true,
-      ignoreHTTPSErrors: true,
-    };
-  } else {
-    options = {
-      headless: true, 
-      defaultViewport: false,
-    };
-  }
+  let options = {
+    headless: true,
+    args: [
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+    ],
+  };
 
   try {
     const browser = await puppeteer.launch(options);
@@ -41,7 +20,7 @@ app.get("/gold-price", async (req, res) => {
       waitUntil: 'domcontentloaded',
     });
 
-    const goldHandles = await page.$$('.vlzY6d'); 
+    const goldHandles = await page.$$('.vlzY6d');
 
     let goldValues = [];
 
@@ -62,8 +41,9 @@ app.get("/gold-price", async (req, res) => {
   }
 });
 
-app.listen(3000, () => {
-  console.log("Server started on port 3000");
+const PORT = process.env.PORT || 3000; // Use Render's dynamic port or default to 3000
+app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
 });
 
 module.exports = app;
