@@ -28,13 +28,12 @@ app.get("/gold-price", async (req, res) => {
     };
   } else {
     options = {
-      headless: true,
+      headless: true, // Ensure headless mode for local testing too
       defaultViewport: false,
     };
   }
 
   try {
-    console.log("Launching browser...");
     const browser = await puppeteer.launch(options);
     const page = await browser.newPage();
 
@@ -43,6 +42,8 @@ app.get("/gold-price", async (req, res) => {
     });
 
     const goldHandles = await page.$$('.vlzY6d');
+    const goldHandles = await page.$$('.vlzY6d'); // Keep your selector as requested
+
     let goldValues = [];
 
     for (const goldInfo of goldHandles) {
@@ -50,14 +51,15 @@ app.get("/gold-price", async (req, res) => {
         el => el.querySelector("g-card-section > div.vlzY6d > span:nth-child(1)").textContent,
         goldInfo
       );
+      console.log(val);
       goldValues.push(val);
     }
 
     await browser.close();
     res.json({ goldPrices: goldValues });
   } catch (err) {
-    console.error("Error during scraping:", err);
-    res.status(500).send(`Failed to fetch gold price: ${err.message}`);
+    console.error('Error fetching gold price:', err);
+    res.status(500).send('Failed to fetch gold price');
   }
 });
 
@@ -66,4 +68,3 @@ app.listen(3000, () => {
 });
 
 module.exports = app;
-
