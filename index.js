@@ -41,7 +41,6 @@ app.get("/gold-price", async (req, res) => {
       waitUntil: 'domcontentloaded',
     });
 
-    const goldHandles = await page.$$('.vlzY6d');
     const goldHandles = await page.$$('.vlzY6d'); // Keep your selector as requested
 
     let goldValues = [];
