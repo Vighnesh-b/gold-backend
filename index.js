@@ -31,7 +31,7 @@ app.get("/gold-price", async (req, res) => {
           waitUntil: 'networkidle2',
       });
 
-      await page.waitForSelector('.vlzY6d', { timeout: 5000 });
+      await page.waitForSelector('.vlzY6d', { timeout: 50000 });
       const goldHandles = await page.$$('.vlzY6d');
 
       let goldValues = [];
